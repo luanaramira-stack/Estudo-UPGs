@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geoportal IMASUL / MS — Vazios de Monitoramento nas UPGs</title>
+  
+  <!-- Leaflet CSS (Local) -->
+  <link rel="stylesheet" href="libs/leaflet.css">
+  <!-- Custom Geoportal CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- CABEÇALHO SUPERIOR -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-logo-container" title="WSI Inteligência Hídrica">
+        <img src="assets/logo_wsi.png" alt="WSI Inteligência Hídrica" class="brand-logo">
+      </div>
+      <span class="brand-badge">IMASUL / MS</span>
+      <div class="brand-titles">
+        <h1>Geoportal de Recursos Hídricos — Revisão de UPGs</h1>
+        <p>Diagnóstico de Vazios de Monitoramento e Rede Hidrometeorológica do Leste de MS</p>
+      </div>
+    </div>
+
+    <!-- Estatísticas Rápidas -->
+    <div class="header-stats">
+      <div class="stat-pill" title="Unidades de Planejamento e Gerenciamento">
+        <span>UPGs:</span> <strong>9</strong>
+      </div>
+      <div class="stat-pill" title="Sub-bacias avaliadas">
+        <span>Sub-bacias:</span> <strong>132</strong>
+      </div>
+      <div class="stat-pill" title="Estações Revisadas">
+        <span>Estações:</span> <strong>83</strong>
+      </div>
+      <div class="stat-pill" title="Estações Telemétricas">
+        <span>Telemétricas:</span> <strong>58 (70%)</strong>
+      </div>
+      <div class="stat-pill" title="Pontos Sugeridos para Novas PCDs" style="border-color:#38bdf8; background:#f0f9ff;">
+        <span>⭐ PCDs Sugeridas:</span> <strong style="color:#0284c7;">7</strong>
+      </div>
+    </div>
+
+    <!-- Ações do Cabeçalho -->
+    <div class="header-actions">
+      <button id="btn-open-dashboard" class="btn-header btn-primary-action" title="Visualizar gráficos e indicadores do estudo">
+        <span>📊 Dashboard</span>
+      </button>
+      <button id="btn-open-drawer" class="btn-header" title="Abrir Tabela de Atributos">
+        <span>📋 Tabela de Dados</span>
+      </button>
+      <button id="btn-reset-view" class="btn-header" title="Centralizar Mapa no Mato Grosso do Sul">
+        <span>🎯 Reset Zoom</span>
+      </button>
+      <button id="btn-print-map" class="btn-header" title="Imprimir / Exportar Mapa">
+        <span>🖨️ Exportar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ÁREA PRINCIPAL DO GEOPORTAL -->
+  <div class="main-layout">
+    
+    <!-- PAINEL LATERAL ESQUERDO (SIDEBAR) -->
+    <aside class="sidebar" id="sidebar">
+      <button id="sidebar-toggle" class="sidebar-toggle-btn" title="Recolher / Expandir Painel">◀</button>
+      
+      <!-- Navegação das Abas -->
+      <nav class="sidebar-tabs">
+        <button class="tab-btn active" data-tab="tab-camadas">
+          <span>🗂️ Camadas</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-filtros">
+          <span>🔍 Filtros</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-basemaps">
+          <span>🗺️ Mapas</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-sobre">
+          <span>ℹ️ Sobre</span>
+        </button>
+      </nav>
+
+      <!-- Conteúdo das Abas -->
+      <div class="sidebar-content">
+        
+        <!-- ABA 1: CAMADAS & LEGENDA -->
+        <div class="tab-pane active" id="tab-camadas">
+          
+          <!-- Busca Rápida -->
+          <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="quick-search-input" class="search-input" placeholder="Buscar estação, município, rio ou UPG...">
+            <div id="search-results" class="search-results-list"></div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-title">
+              <span>Camadas do Estudo</span>
+            </div>
+
+            <!-- Camada: Pontos Sugeridos de PCDs -->
+            <div class="layer-card" style="border-left: 4px solid #06b6d4;">
+              <div class="layer-header">
+                <div class="layer-title-box">
+                  <span class="layer-name">⭐ PCDs Sugeridas</span>
+                  <span class="layer-badge">7 pontos</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" class="layer-checkbox" data-layer="pontos_sugeridos" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="legend-preview">
+                <div class="legend-item">
+                  <span class="legend-swatch point" style="background:#06b6d4; border-color:#083344;"></span>
+                  <span>Pontos propostos para sanar vazios</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Camada: PCDs Existentes -->
+            <div class="layer-card">
+              <div class="layer-header">
+                <div class="layer-title-box">
+                  <span class="layer-name">🔴 PCDs Existentes</span>
+                  <span class="layer-badge">2 pontos</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" class="layer-checkbox" data-layer="pcds_existentes" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="legend-preview">
+                <div class="legend-item">
+                  <span class="legend-swatch point" style="background:#ef4444; border-color:#991b1b;"></span>
+                  <span>Dourados e Cassilândia (em operação)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Camada: Comitê Paranaíba -->
+            <div class="layer-card">
+              <div class="layer-header">
+                <div class="layer-title-box">
+                  <span class="layer-name">🟠 PCDs Comitê Paranaíba</span>
+                  <span class="layer-badge">3 pontos</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" class="layer-checkbox" data-layer="comite_paranaiba" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="legend-preview">
+                <div class="legend-item">
+                  <span class="legend-swatch point" style="background:#f97316; border-color:#9a3412;"></span>
+                  <span>Pontos de monitoramento Paranaíba</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Camada: Estações com Telemetria -->
+            <div class="layer-card">
+              <div class="layer-header">
+                <div class="layer-title-box">
+                  <span class="layer-name">🟡 Estações com Telemetria</span>
+                  <span class="layer-badge">58 estações</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" class="layer-checkbox" data-layer="estacoes_telemetria" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="legend-preview">
+                <div class="legend-item">
+                  <span class="legend-swatch point" style="background:#facc15; border-color:#713f12;"></span>
+                  <span>Transmissão telemétrica ativa</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Camada: Estações Revisadas (Todas) -->
+            <div class="layer-card">
+              <div class="layer-header">
+                <div class="layer-title-box">
+                  <span class="layer-name">🟢 Estações Revisadas (Todas)</span>
+                  <span class="layer-badge">83 estações</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" class="layer-checkbox" data-layer="estacoes_revisadas" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="legend-preview">
+                <div class="legend-item">
+                  <span class="legend-swatch point" style="background:#10b981; border-color:#047857;"></span>
+                  <span>Rede avaliada no estudo</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Camada: Estações 1º Estudo -->
+            <div class="layer-card">
+              <div class="layer-header">
+                <div class="layer-title-box">
+                  <span class="layer-name">🟤 Estações 1º Estudo (Histórico)</span>
+                  <span class="layer-badge">205 estações</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" class="layer-checkbox" data-layer="estacoes_1_estudo">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="legend-preview">
+                <div class="legend-item">
+                  <span class="legend-swatch point" style="background:#92400e; border-color:#451a03;"></span>
+                  <span>Rede histórica de referência</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Camada: Hidrografia Estratégica -->
+            <div class="layer-card">
+              <div class="layer-header">
+                <div class="layer-title-box">
+                  <span class="layer-name">🌊 Hidrografia Estratégica</span>
+                  <span class="layer-badge">9 Rios / 216 Trechos</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" class="layer-checkbox" data-layer="hidrografia" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="layer-controls">
+                <span>Opacidade:</span>
+                <input type="range" class="opacity-slider" data-layer="hidrografia" min="0" max="1" step="0.1" value="0.9">
+              </div>
+              <div class="legend-preview">
+                <div class="legend-item">
+                  <span class="legend-swatch line" style="background:#0284c7;"></span>
+                  <span>Rios principais das 9 UPGs</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Camada: Índice de Vazios -->
+            <div class="layer-card">
+              <div class="layer-header">
+                <div class="layer-title-box">
+                  <span class="layer-name">🟩 Índice de Vazios de Monitoramento</span>
+                  <span class="layer-badge">132 Bacias</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" class="layer-checkbox" data-layer="indices_vazios" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="layer-controls">
+                <span>Opacidade:</span>
+                <input type="range" class="opacity-slider" data-layer="indices_vazios" min="0" max="1" step="0.1" value="0.85">
+              </div>
+              <div class="legend-preview">
+                <div style="font-size:0.68rem; margin-bottom:2px; color:#475569;">
+                  <em>Valores mais próximos de 1,0 indicam maior vazio de monitoramento.</em>
+                </div>
+                <div class="choropleth-gradient">
+                  <div class="choropleth-step" style="background:#f7fcf5;"></div>
+                  <div class="choropleth-step" style="background:#e5f5e0;"></div>
+                  <div class="choropleth-step" style="background:#c7e9c0;"></div>
+                  <div class="choropleth-step" style="background:#a1d99b;"></div>
+                  <div class="choropleth-step" style="background:#74c476;"></div>
+                  <div class="choropleth-step" style="background:#41ab5d;"></div>
+                  <div class="choropleth-step" style="background:#238b45;"></div>
+                  <div class="choropleth-step" style="background:#006d2c;"></div>
+                  <div class="choropleth-step" style="background:#00441b;"></div>
+                  <div class="choropleth-step" style="background:#00250f;"></div>
+                </div>
+                <div class="choropleth-labels">
+                  <span>0,0 (Ótimo)</span>
+                  <span>0,5</span>
+                  <span>1,0 (Crítico)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Camada: UPGs -->
+            <div class="layer-card">
+              <div class="layer-header">
+                <div class="layer-title-box">
+                  <span class="layer-name">🟨 UPGs (Unidades de Gerenciamento)</span>
+                  <span class="layer-badge">9 UPGs</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" class="layer-checkbox" data-layer="upgs" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="layer-controls">
+                <span>Opacidade:</span>
+                <input type="range" class="opacity-slider" data-layer="upgs" min="0" max="1" step="0.1" value="0.9">
+              </div>
+              <div class="legend-preview">
+                <div class="legend-item">
+                  <span class="legend-swatch" style="border: 2px dashed #b45309; background: rgba(254,243,199,0.2);"></span>
+                  <span>Limites das 9 UPGs da Região Hidrográfica do Paraná</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Camada: Divisão Municipal -->
+            <div class="layer-card">
+              <div class="layer-header">
+                <div class="layer-title-box">
+                  <span class="layer-name">🏛️ Municípios do Estado de MS</span>
+                  <span class="layer-badge">79 Mun.</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" class="layer-checkbox" data-layer="municipios_ms" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="layer-controls">
+                <span>Opacidade:</span>
+                <input type="range" class="opacity-slider" data-layer="municipios_ms" min="0" max="1" step="0.1" value="0.25">
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ABA 2: FILTROS DINÂMICOS -->
+        <div class="tab-pane" id="tab-filtros">
+          <div class="panel-section">
+            <div class="panel-title">Filtros Avançados</div>
+
+            <!-- Filtro por UPG -->
+            <div class="filter-group">
+              <label class="filter-label">Filtrar por UPG:</label>
+              <select id="filter-upg" class="filter-select">
+                <option value="ALL">Todas as UPGs</option>
+                <option value="I.1 UPG IGUATEMI">I.1 UPG Iguatemi</option>
+                <option value="I.2 UPG AMAMBAI">I.2 UPG Amambaí</option>
+                <option value="I.3 UPG IVINHEMA">I.3 UPG Ivinhema</option>
+                <option value="I.4 UPG PARDO">I.4 UPG Pardo</option>
+                <option value="I.5 UPG VERDE">I.5 UPG Verde</option>
+                <option value="I.6 UPG SUCURIÚ">I.6 UPG Sucuriú</option>
+                <option value="I.7 UPG QUITÉRIA">I.7 UPG Quitéria</option>
+                <option value="I.8 UPG SANTANA">I.8 UPG Santana</option>
+                <option value="I.9 UPG APORÉ">I.9 UPG Aporé</option>
+              </select>
+            </div>
+
+            <!-- Filtro por Índice de Vazios Mínimo -->
+            <div class="filter-group">
+              <label class="filter-label">
+                Índice de Vazio Mínimo: <strong id="val-vazio-display">0.0</strong>
+              </label>
+              <input type="range" id="filter-vazio" min="0" max="0.9" step="0.1" value="0" style="width:100%; accent-color:var(--primary);">
+              <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:#64748b; margin-top:2px;">
+                <span>0.0 (Todas)</span>
+                <span>0.5</span>
+                <span>0.9 (Críticas)</span>
+              </div>
+            </div>
+
+            <!-- Filtro por Tipo de Estação -->
+            <div class="filter-group">
+              <label class="filter-label">Tipo de Estação:</label>
+              <select id="filter-tipo" class="filter-select">
+                <option value="ALL">Todos os Tipos</option>
+                <option value="Fluviométrica">Fluviométrica</option>
+                <option value="Pluviométrica">Pluviométrica</option>
+              </select>
+            </div>
+
+            <!-- Filtro Telemetria -->
+            <div class="filter-group">
+              <label style="display:flex; align-items:center; gap:8px; font-size:0.8rem; cursor:pointer;">
+                <input type="checkbox" id="filter-telem">
+                <span>Apenas estações com Telemetria Ativa</span>
+              </label>
+            </div>
+
+            <button id="btn-reset-filters" class="btn-reset-filters">Limpar Todos os Filtros</button>
+          </div>
+        </div>
+
+        <!-- ABA 3: MAPAS DE FUNDO -->
+        <div class="tab-pane" id="tab-basemaps">
+          <div class="panel-section">
+            <div class="panel-title">Selecione o Mapa Base</div>
+            <div class="basemap-grid">
+              <div class="basemap-option active" data-basemap="carto_light">Carto Light</div>
+              <div class="basemap-option" data-basemap="google_hybrid">Satélite Híbrido</div>
+              <div class="basemap-option" data-basemap="osm">OpenStreetMap</div>
+              <div class="basemap-option" data-basemap="carto_dark">Carto Dark</div>
+              <div class="basemap-option" data-basemap="esri_topo">Esri Topo</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA 4: SOBRE O ESTUDO -->
+        <div class="tab-pane" id="tab-sobre">
+          <div class="panel-section" style="font-size:0.8rem; line-height:1.5; color:#334155;">
+            <div class="panel-title">Diagnóstico e Recomendações</div>
+            <p style="margin-bottom:10px;">
+              Este Geoportal consolida o trabalho de <strong>Revisão dos Estudos de Vazios de Monitoramento</strong> nas Unidades de Planejamento e Gerenciamento de Recursos Hídricos (UPGs) da vertente do Rio Paraná no Mato Grosso do Sul.
+            </p>
+            <h4 style="font-size:0.82rem; color:var(--primary-dark); margin:12px 0 6px;">Pontos Estratégicos Recomendados:</h4>
+            <ul style="padding-left:18px; margin-bottom:12px; font-size:0.75rem;">
+              <li><strong>UPG Iguatemi:</strong> Córrego Pirajuí</li>
+              <li><strong>UPG Amambaí:</strong> Rio Amambaí</li>
+              <li><strong>UPG Ivinhema:</strong> Rio Dourados (PCD Existente)</li>
+              <li><strong>UPG Pardo:</strong> Rio Taquaruçu</li>
+              <li><strong>UPG Verde:</strong> Rio Pombo</li>
+              <li><strong>UPG Sucuriú:</strong> Ribeirão Cangalha</li>
+              <li><strong>UPG Quitéria:</strong> Rio da Quitéria</li>
+              <li><strong>UPG Santana:</strong> Rio dos Barreiros</li>
+              <li><strong>UPG Aporé:</strong> Rio Aporé ou do Peixe (Cassilândia)</li>
+            </ul>
+            <p style="font-size:0.72rem; color:#64748b;">
+              Dados integrados: IMASUL, ANA (Agência Nacional de Águas e Saneamento Básico), Comitês de Bacias Hidrográficas do MS.
+            </p>
+            <div style="margin-top:16px; padding-top:12px; border-top:1px solid #e2e8f0; display:flex; align-items:center; gap:12px;">
+              <img src="assets/logo_wsi.png" alt="WSI Inteligência Hídrica" style="height:32px; width:auto; border-radius:4px; background:#fff; padding:2px; border:1px solid #e2e8f0;">
+              <div>
+                <strong style="display:block; font-size:0.75rem; color:#1e293b;">WSI Inteligência Hídrica</strong>
+                <span style="font-size:0.68rem; color:#64748b;">Consultoria e Soluções em Recursos Hídricos</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- MAPA LEAFLET -->
+    <main id="map"></main>
+
+    <!-- GAVETA INFERIOR (TABELA DE ATRIBUTOS RETRÁTIL) -->
+    <div class="data-drawer" id="data-drawer">
+      <div class="drawer-header">
+        <div class="drawer-tabs">
+          <button class="drawer-tab-btn active" data-tab="estacoes_revisadas">Estações Revisadas (83)</button>
+          <button class="drawer-tab-btn" data-tab="indices_vazios">Sub-bacias / Vazios (132)</button>
+          <button class="drawer-tab-btn" data-tab="pontos_sugeridos">PCDs Sugeridas (7)</button>
+          <button class="drawer-tab-btn" data-tab="pcds_existentes">PCDs Existentes (2)</button>
+          <button class="drawer-tab-btn" data-tab="upgs">UPGs (9)</button>
+        </div>
+        <div class="drawer-actions">
+          <input type="text" id="drawer-table-search" class="drawer-search" placeholder="Filtrar tabela...">
+          <button id="btn-export-csv" class="btn-drawer-action" title="Exportar dados para planilha CSV (Excel)">📥 Exportar CSV</button>
+          <button id="btn-close-drawer" class="btn-close-drawer" title="Fechar Tabela">✖</button>
+        </div>
+      </div>
+      <div class="drawer-body" id="drawer-table-body">
+        <!-- Tabela renderizada dinamicamente -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL DASHBOARD / INDICADORES -->
+  <div class="modal-overlay" id="modal-dashboard">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon-badge">📊</div>
+          <div>
+            <h3>Dashboard — Revisão das UPGs e Vazios de Monitoramento</h3>
+            <p class="modal-subtitle">Diagnóstico hidrográfico por UPG e sub-bacia na vertente do Rio Paraná / MS</p>
+          </div>
+        </div>
+        <button id="btn-close-modal" class="btn-close-drawer" style="font-size:1.3rem;" title="Fechar modal (Esc)">✖</button>
+      </div>
+
+      <!-- Barra de Abas do Modal -->
+      <div class="modal-nav-tabs">
+        <button class="modal-nav-btn active" data-dash-tab="upgs">
+          <span>📈 Gráficos por UPG (Sub-bacias e Vazios)</span>
+        </button>
+        <button class="modal-nav-btn" data-dash-tab="geral">
+          <span>🌐 Indicadores Gerais do Estado</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- PAINEL 1: GRÁFICOS POR UPG (SUB-BACIAS E VAZIOS) -->
+        <div class="dash-tab-pane active" id="dash-pane-upgs">
+          <!-- Barra de Filtros e Controles Rápidos -->
+          <div class="dash-controls-bar">
+            <div class="dash-filter-item">
+              <label for="dash-upg-select">Filtrar UPG:</label>
+              <select id="dash-upg-select" class="dash-select">
+                <option value="ALL">🔍 Todas as 9 UPGs (Grade Completa)</option>
+                <option value="I.1 UPG IGUATEMI">I.1 UPG Iguatemi (5 sub-bacias)</option>
+                <option value="I.2 UPG AMAMBAI">I.2 UPG Amambaí (13 sub-bacias)</option>
+                <option value="I.3 UPG IVINHEMA">I.3 UPG Ivinhema (25 sub-bacias)</option>
+                <option value="I.4 UPG PARDO">I.4 UPG Pardo (17 sub-bacias)</option>
+                <option value="I.5 UPG VERDE">I.5 UPG Verde (18 sub-bacias)</option>
+                <option value="I.6 UPG SUCURIÚ">I.6 UPG Sucuriú (22 sub-bacias)</option>
+                <option value="I.7 UPG QUITÉRIA">I.7 UPG Quitéria (30 sub-bacias)</option>
+                <option value="I.8 UPG SANTANA">I.8 UPG Santana (1 sub-bacia)</option>
+                <option value="I.9 UPG APORÉ">I.9 UPG Aporé (1 sub-bacia)</option>
+              </select>
+            </div>
+
+            <!-- Botões Rápidos (Pills) -->
+            <div class="dash-pills-container" id="dash-upg-pills">
+              <button class="dash-pill-btn active" data-upg="ALL">Todas</button>
+              <button class="dash-pill-btn" data-upg="I.1 UPG IGUATEMI">Iguatemi</button>
+              <button class="dash-pill-btn" data-upg="I.2 UPG AMAMBAI">Amambaí</button>
+              <button class="dash-pill-btn" data-upg="I.3 UPG IVINHEMA">Ivinhema</button>
+              <button class="dash-pill-btn" data-upg="I.4 UPG PARDO">Pardo</button>
+              <button class="dash-pill-btn" data-upg="I.5 UPG VERDE">Verde</button>
+              <button class="dash-pill-btn" data-upg="I.6 UPG SUCURIÚ">Sucuriú</button>
+              <button class="dash-pill-btn" data-upg="I.7 UPG QUITÉRIA">Quitéria</button>
+              <button class="dash-pill-btn" data-upg="I.8 UPG SANTANA">Santana</button>
+              <button class="dash-pill-btn" data-upg="I.9 UPG APORÉ">Aporé</button>
+            </div>
+
+            <!-- Legenda Compacta de Criticidade -->
+            <div class="dash-legend-compact">
+              <span class="dash-legend-item"><span class="swatch-critico"></span> Vazio Crítico (≥ 0.8)</span>
+              <span class="dash-legend-item"><span class="swatch-moderado"></span> Vazio Médio (0.3 - 0.79)</span>
+              <span class="dash-legend-item"><span class="swatch-baixo"></span> Baixo Vazio (&lt; 0.3)</span>
+            </div>
+          </div>
+
+          <div class="dash-hint-banner">
+            <span>💡 <strong>Interatividade:</strong> Clique em qualquer barra de sub-bacia para fechar o dashboard e navegar até ela com zoom e destaque no mapa.</span>
+          </div>
+
+          <!-- Container dinâmico dos gráficos das UPGs -->
+          <div id="upg-charts-container" class="upg-charts-grid">
+            <!-- Preenchido dinamicamente via Chart.js -->
+          </div>
+        </div>
+
+        <!-- PAINEL 2: INDICADORES GERAIS (ESTADO) -->
+        <div class="dash-tab-pane" id="dash-pane-geral">
+          <div class="dash-summary-row">
+            <div class="dash-kpi-card">
+              <div class="dash-kpi-num">9</div>
+              <div class="dash-kpi-label">UPGs no Estudo</div>
+            </div>
+            <div class="dash-kpi-card">
+              <div class="dash-kpi-num">132</div>
+              <div class="dash-kpi-label">Sub-bacias Avaliadas</div>
+            </div>
+            <div class="dash-kpi-card">
+              <div class="dash-kpi-num">83</div>
+              <div class="dash-kpi-label">Estações Revisadas</div>
+            </div>
+            <div class="dash-kpi-card">
+              <div class="dash-kpi-num">70%</div>
+              <div class="dash-kpi-label">Telemetria Ativa (58 est.)</div>
+            </div>
+            <div class="dash-kpi-card accent">
+              <div class="dash-kpi-num">7</div>
+              <div class="dash-kpi-label">PCDs Sugeridas</div>
+            </div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h4>Índice Médio de Vazios por UPG</h4>
+              <div class="chart-wrapper">
+                <canvas id="canvas-vazios"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h4>Proporção de Telemetria nas Estações</h4>
+              <div class="chart-wrapper">
+                <canvas id="canvas-telem"></canvas>
+              </div>
+            </div>
+            <div class="chart-card" style="grid-column: span 2;">
+              <h4>Distribuição de Estações Revisadas por UPG</h4>
+              <div class="chart-wrapper">
+                <canvas id="canvas-estacoes"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT LIBS LOCAIS -->
+  <script src="libs/leaflet.js"></script>
+  <script src="libs/chart.js"></script>
+  <!-- DADOS GEOJSON EMBUTIDOS (FUNCIONA OFFLINE E COM CLIQUE DUPLO DIRETO) -->
+  <script src="data/layers.js"></script>
+  <!-- LÓGICA PRINCIPAL DO GEOPORTAL -->
+  <script src="js/app.js"></script>
+
+</body>
+</html>
